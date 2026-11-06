@@ -167,8 +167,9 @@ def _executar(args: list[str], modelo: str) -> tuple[dict | None, list[str]]:
     """Um chute do modelo (agent pcbforge-brain = ferramentas negadas)."""
     estados: list[str] = [f"tentativa:{modelo}"]
     try:
+        from pcbforge import paths as _p
         r = subprocess.run(args, capture_output=True, text=True,
-                           timeout=TIMEOUT_S, cwd="/tmp")
+                           timeout=TIMEOUT_S, cwd=str(_p.tmp_dir()))
     except subprocess.TimeoutExpired:
         return None, estados + ["timeout"]
     saida = (r.stdout or "") + (r.stderr or "")

@@ -22,9 +22,8 @@ import yaml  # noqa: F401  (usado por comandos futuros)
 from pcbforge import paths
 
 ROOT = paths.root()
-KI_PY = ("/Applications/KiCad.app/Contents/Frameworks/Python.framework/"
-         "Versions/3.9/bin/python3.9")
-KICAD_CLI = "/Applications/KiCad.app/Contents/MacOS/kicad-cli"
+KI_PY = paths.ki_python()          # Python embutido do KiCad, por SO (PCB/SES)
+KICAD_CLI = paths.kicad_cli()      # kicad-cli por SO: mac / linux / windows
 
 
 @click.group()

@@ -21,7 +21,7 @@ from pathlib import Path
 
 from pcbforge import paths
 
-FOOTPRINTS_DIR = Path("/Applications/KiCad.app/Contents/SharedSupport/footprints")
+FOOTPRINTS_DIR = paths.footprints_dir()  # libs oficiais por SO (mac/linux/windows)
 KI_BRIDGE = Path(__file__).resolve().parent / "courtyard_kibridge.py"
 
 _cache_pad: dict[str, dict[str, tuple[float, float, float]]] = {}
@@ -35,7 +35,9 @@ def _dirs_footprints() -> list[Path]:
     if shared is not None and (shared / "footprints").is_dir():
         dirs.append(shared / "footprints")
     else:
-        dirs.append(FOOTPRINTS_DIR)
+        fp = FOOTPRINTS_DIR  # paths-based; None se KiCad ausente
+        if fp is not None:
+            dirs.append(fp)
     from pcbforge.parts import catalogo
     for fpd, _m3d in catalogo._bases_extra():
         dirs.append(fpd)

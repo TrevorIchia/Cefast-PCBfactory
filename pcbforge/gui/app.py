@@ -19,6 +19,8 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 
+from pcbforge import paths
+
 ROOT = Path(__file__).resolve().parents[2]
 GUI_DIR = Path(__file__).resolve().parent
 
@@ -341,8 +343,10 @@ def bom_interativo(nome: str) -> dict:
     pasta = _placa(nome)
     candidatos = [
         ROOT / "tools" / "InteractiveHtmlBom" / "InteractiveHtmlBom" / "generate_interactive_bom.py",
-        Path("/Applications/KiCad.app/Contents/SharedSupport/plugins/InteractiveHtmlBom/generate_interactive_bom.py"),
     ]
+    _plug = paths.plugins_dir()
+    if _plug:
+        candidatos.append(_plug / "InteractiveHtmlBom" / "generate_interactive_bom.py")
     gerador = next((c for c in candidatos if c.is_file()), None)
     if not gerador:
         return {"disponivel": False}

@@ -15,7 +15,9 @@ import shutil
 import subprocess
 from pathlib import Path
 
-KICAD_CLI = "/Applications/KiCad.app/Contents/MacOS/kicad-cli"
+from pcbforge import paths
+
+KICAD_CLI = paths.kicad_cli()  # kicad-cli por SO: mac / linux / windows
 
 CAMADAS_1 = "F.Cu,F.SilkS,F.Mask,Edge.Cuts"
 CAMADAS_2 = "F.Cu,B.Cu,F.SilkS,B.SilkS,F.Mask,B.Mask,Edge.Cuts"

@@ -18,18 +18,19 @@ from pathlib import Path
 # etc.) entra AQUI, porque bindings tipo Espressif:ESP32-C3-MINI-1 estão fora
 # da lib oficial. kicad-sch_api aceita caminhos separados por os.pathsep
 # (library/cache.py:1166 — ": for Unix, ; for Windows").
+from pcbforge import paths as _paths_mod
 _extra = Path(__file__).resolve().parent.parent.parent / "libcache/kicad-extra/symbols"
-_oficial = "/Applications/KiCad.app/Contents/SharedSupport/symbols"
+_oficial = _paths_mod.symbols_dir()  # descoberta cross-platform (env/OS-aware)
 _paths_env = [_p for _p in os.environ.get("KICAD_SYMBOL_DIR", "").split(os.pathsep) if _p]
 if not _paths_env:
-    _paths_env = [_oficial]
+    _paths_env = [str(_oficial)] if _oficial else []
 if _extra.is_dir() and str(_extra) not in _paths_env:
     _paths_env.append(str(_extra))
 os.environ["KICAD_SYMBOL_DIR"] = os.pathsep.join(_paths_env)
 
 import kicad_sch_api as ksa  # noqa: E402  (import precisa vir depois do setdefault)
 
-KICAD_CLI = "/Applications/KiCad.app/Contents/MacOS/kicad-cli"
+KICAD_CLI = _paths_mod.kicad_cli()
 RAILS_PADRAO = {"VBUS", "GND", "VIN", "VCC", "+5V", "+3V3", "GNDA", "GND_PWR"}
 
 _PASSO_X = 30.0   # espaçamento horizontal entre componentes

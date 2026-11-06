@@ -93,6 +93,15 @@ def main() -> int:
     if sys.platform == "darwin" and sh:
         ver = run("defaults read /Applications/KiCad.app/Contents/Info.plist "
                   "CFBundleShortVersionString 2>/dev/null")
+    elif sh:  # linux/windows: versão pelo kicad-cli (mesmo binário em todos)
+        cli = paths.kicad_cli()
+        if cli:
+            try:
+                r = subprocess.run([cli, "--version"], capture_output=True,
+                                   text=True, timeout=15)
+                ver = (r.stdout or r.stderr).strip().splitlines()[-1] if (r.stdout or r.stderr) else None
+            except Exception:
+                ver = None
     add("KiCad", bool(sh), "verde" if sh else "amarelo",
         f"versão {ver} — {sh}" if sh else "NÃO INSTALADO (sem symbols/ + footprints/)")
 

@@ -11,7 +11,7 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, "/Users/user/pcbforge")
+sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[1]))
 
 import yaml
 from pcbforge.core import placement as pl
@@ -19,7 +19,7 @@ from pcbforge.core.validator import aplicar_default_espessura
 from pcbforge.generator.pcb import aplicar_regras_projeto, gerar_pcb
 from pcbforge.routing import facesimples, run as rt
 
-ROOT = Path("/Users/user/pcbforge")
+ROOT = Path(__file__).resolve().parents[1]
 NOME = "ex-attiny-isp-1l"
 PASTA = ROOT / "boards" / NOME
 OUT = PASTA / "outputs"

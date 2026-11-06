@@ -67,6 +67,64 @@ def kicad_shared() -> Path | None:
 
 
 @lru_cache(maxsize=1)
+def kicad_cli() -> str | None:
+    """kicad-cli do SO (erc/drc/gerbers/step/render) — descoberta por plataforma.
+
+    Ordem: env PCBFORGE_KICAD_CLI > macOS (.app) > Windows (bin\\kicad-cli.exe
+    da versão mais nova) > Linux (/usr/bin/kicad-cli) > PATH (which). None se
+    não achou — o chamador trata como falta de ambiente (doctor/vermelho 🔴).
+    """
+    env = os.environ.get("PCBFORGE_KICAD_CLI")
+    if env and Path(env).exists():
+        return env
+    if sys.platform == "darwin":
+        c = Path("/Applications/KiCad.app/Contents/MacOS/kicad-cli")
+        return str(c) if c.exists() else None
+    if sys.platform in ("win32", "cygwin"):
+        base = Path("C:/Program Files/KiCad")
+        if base.is_dir():
+            for verdir in sorted(base.iterdir(), reverse=True):
+                c = verdir / "bin" / "kicad-cli.exe"
+                if c.exists():
+                    return str(c)
+    else:  # linux e afins
+        for c in ("/usr/bin/kicad-cli", "/usr/local/bin/kicad-cli"):
+            if Path(c).exists():
+                return c
+    import shutil
+    return shutil.which("kicad-cli")
+
+
+def symbols_dir() -> Path | None:
+    """`symbols/` das libs oficiais — sempre via kicad_shared() (nunca fixo)."""
+    s = kicad_shared()
+    return None if s is None else s / "symbols"
+
+
+def footprints_dir() -> Path | None:
+    """`footprints/` das libs oficiais (as .pretty aptas do censo)."""
+    s = kicad_shared()
+    return None if s is None else s / "footprints"
+
+
+def plugins_dir() -> Path | None:
+    """`scripting/plugins` equivalente por plataforma (ex.: InteractiveHtmlBom)."""
+    s = kicad_shared()
+    if s is None:
+        return None
+    for cand in (s / "scripting" / "plugins", s / "plugins", s / "python" / "scripting" / "plugins"):
+        if cand.is_dir():
+            return cand
+    return None
+
+
+def tmp_dir() -> Path:
+    """Temporal DE CADA SO (Windows não tem /tmp)."""
+    import tempfile
+    return Path(tempfile.gettempdir())
+
+
+@lru_cache(maxsize=1)
 def ki_python() -> str | None:
     """Python EMBUTIDO do KiCad (tem o módulo pcbnew) — p/ pontes como dsn_bridge.
 

@@ -20,10 +20,30 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
 $Root = $PSScriptRoot
-if (-not (Test-Path "$Root\pcbforge\cli.py")) {
-    Write-Host "  ⛔ instalador fora da raiz do PCBForge ($Root)" -ForegroundColor Red
-    exit 1
+$RepoUrl = "https://github.com/TrevorIchia/Cefast-PCBfactory"
+
+# Código do motor: presente (clone/pasta) ou baixa o tarball do repositório
+# (é o mesmo bootstrap do install.sh — dá p/ rodar por irm/script externo).
+if (-not (Test-Path "$PSScriptRoot\pcbforge\cli.py")) {
+    if ($SomenteVerificar) {
+        Write-Host "  ⛔ FALTA (só-verificar): código do motor não está em $PSScriptRoot" -ForegroundColor Red
+        exit 1
+    }
+    $Root = "${env:USERPROFILE}\pcbforge"
+    New-Item -ItemType Directory -Force -Path $Root | Out-Null
+    Write-Host "  … código do motor ausente — baixando o repositório (tarball)…" -ForegroundColor Cyan
+    $tarball = "$env:TEMP\cefast-main.tar.gz"
+    Invoke-WebRequest "$RepoUrl/archive/refs/heads/main.tar.gz" -OutFile $tarball
+    tar -xzf $tarball -C $Root --strip-components 1
+    Remove-Item -Force $tarball -ErrorAction SilentlyContinue
+    if (-not (Test-Path "$Root\pcbforge\cli.py")) {
+        Write-Host "  ⛔ extração falhou — clonar manual: git clone $RepoUrl" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  ✅ repositório baixado para $Root" -ForegroundColor Green
 }
+$Root = if (Test-Path "$Root\pcbforge\cli.py") { $Root } else { "${env:USERPROFILE}\pcbforge" }
+
 Write-Host "  ✅ repositório em $Root"
 Write-Host "== PCBForge instalador — Windows =="
 
@@ -181,5 +201,15 @@ if (Test-Path $VenvPy) {
 }
 
 Write-Host ""
-Write-Host "pronto: painel web = '$VenvPy -m pcbforge.cli serve' (M9, http://127.0.0.1:8000)"
+Write-Host "════════ PCBForge pronto (0 🔴) ════════"
+Write-Host "Cérebro: GLM 5.3 Flash grátis via OpenCode CLI (nada p/ configurar a mais)."
+Write-Host "Como usar:"
+Write-Host "  cd $Root"
+Write-Host "  1) $VenvPy -m pcbforge.cli doctor                  # ambiente ok?"
+Write-Host "  2) $VenvPy -m pcbforge.cli brain `"placa blink: led + resistor + conector 5V`""
+Write-Host "     → prévia da netlist pra revisar (nunca inventa componente)"
+Write-Host "  3) $VenvPy -m pcbforge.cli serve                   # painel web do pedido"
+Write-Host "     http://127.0.0.1:8000   (revisar → aprovar → build → baixar zip)"
+Write-Host "  4) zip de Gerbers/JLCPCB em boards\<nome>\outputs\"
+Write-Host "Receita completa (passo a passo): docs\WORKFLOW-QUOTE.md"
 exit 0

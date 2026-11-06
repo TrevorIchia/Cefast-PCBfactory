@@ -18,15 +18,14 @@ from kiutils.items.gritems import GrLine
 
 from pcbforge import paths
 
-FOOTPRINTS_DIR = Path("/Applications/KiCad.app/Contents/SharedSupport/footprints")
+FOOTPRINTS_DIR = paths.footprints_dir()  # libs oficiais por SO (mac/linux/windows)
 # F7: raiz universal (paths.root honra PCBFORGE_ROOT) — o antigo
-# parent.parent/"pcbforge" dobrava o pacote (bug latente: só projetos NOVOS
 # esbarravam, rebuilds reutilizavam o .kicad_pro existente)
 TEMPLATE_PRO = paths.root() / "pcbforge" / "assets" / "template.kicad_pro"
 
 
-def _dir_footprints() -> Path:
-    """Pasta das .pretty — paths.kicad_shared() (F5) com fallback ao caminho fixo."""
+def _dir_footprints() -> Path | None:
+    """Pasta das .pretty — paths.kicad_shared() (F5); None se KiCad ausente."""
     shared = paths.kicad_shared()
     if shared is not None and (shared / "footprints").is_dir():
         return shared / "footprints"
@@ -38,7 +37,10 @@ def _footprint_caminho(footprint_ref: str) -> Path | None:
     if not footprint_ref or ":" not in footprint_ref:
         return None
     lib, nome = footprint_ref.split(":", 1)
-    p = _dir_footprints() / f"{lib}.pretty" / f"{nome}.kicad_mod"
+    dfp = _dir_footprints()
+    if dfp is None:
+        return None
+    p = dfp / f"{lib}.pretty" / f"{nome}.kicad_mod"
     if p.exists():
         return p
     # F14a/F14c: lib EXTRA do repo (Espressif etc.) — binding com 3D real

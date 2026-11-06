@@ -10,16 +10,53 @@ import re
 import subprocess
 from pathlib import Path
 
-ROOT = Path("/Users/user/pcbforge")
-KI_PY = "/Applications/KiCad.app/Contents/Frameworks/Python.framework/Versions/3.9/bin/python3.9"
-KICAD_CLI = "/Applications/KiCad.app/Contents/MacOS/kicad-cli"
-ZULU_JAVA = ROOT / "tools" / "zulu25.38.107-ca-jre25.0.5-macosx_x64" / "Contents" / "Home" / "bin" / "java"
+from pcbforge import paths
+
+ROOT = paths.root()  # universal: env PCBFORGE_ROOT > pasta do pacote
+KI_PY = paths.ki_python()          # Python embutido do KiCad por SO
+KICAD_CLI = paths.kicad_cli()      # kicad-cli por SO
+ZULU_JAVA = None  # descoberto em runtime por _java(), abaixo
 FREEROUTING_JAR = ROOT / "tools" / "freerouting.jar"
 BRIDGE = ROOT / "pcbforge" / "routing" / "dsn_bridge.py"
 
 
+def _java() -> str:
+    """Java por SO: env JAVA_HOME > tools/ (zulu) > PATH (which java)."""
+    import os
+    import shutil
+    home = os.environ.get("JAVA_HOME")
+    if home and Path(home, "bin").is_dir():
+        c = Path(home, "bin", "java.exe" if os.name == "nt" else "java")
+        if c.exists():
+            return str(c)
+    globbed = sorted((ROOT / "tools").glob("**/bin/java*"))
+    for g in globbed:
+        if g.is_file():
+            return str(g)
+    hi = shutil.which("java")
+    if hi:
+        return hi
+    return "java"
+
+
+def _ki_py() -> str:
+    """Python embutido do KiCad — erro legível quando falta (§9/nunca crash)."""
+    if KI_PY:
+        return KI_PY
+    raise RuntimeError("Python do KiCad não achado (pcbnew) — rode o install.sh ou "
+                       " defina PCBFORGE_KI_PY")
+
+
+def _kicad_cli() -> str:
+    """kicad-cli — erro legível quando falta (§9/nunca crash)."""
+    if KICAD_CLI:
+        return KICAD_CLI
+    raise RuntimeError("kicad-cli não achado — rode o install.sh ou defina "
+                       "PCBFORGE_KICAD_CLI")
+
+
 def exportar_dsn(pcb_path: Path, dsn_path: Path, log: list[str]) -> None:
-    r = subprocess.run([KI_PY, str(BRIDGE), "export-dsn", str(pcb_path), str(dsn_path)],
+    r = subprocess.run([_ki_py(), str(BRIDGE), "export-dsn", str(pcb_path), str(dsn_path)],
                        capture_output=True, text=True)
     if r.returncode != 0:
         raise RuntimeError(f"export DSN falhou: {(r.stderr or r.stdout)[:300]}")
@@ -34,7 +71,7 @@ def rotear(dsn_path: Path, ses_path: Path, timeout_s: int, log: list[str],
     `na_roteadas` lista as conexões exatas presas ("Net 'VCC': U1-20 -> J2-2…"),
     extrai­das do resumo do Freerouting ≥2.2, usado pelo fallback_manual (§8).
     """
-    r = subprocess.run([str(ZULU_JAVA), "-jar", str(FREEROUTING_JAR),
+    r = subprocess.run([_java(), "-jar", str(FREEROUTING_JAR),
                         "-de", str(dsn_path), "-do", str(ses_path),
                         "--router.automatic_neckdown=false",
                         "--router.autorouter.max_passes=60"],
@@ -76,7 +113,7 @@ def rotear(dsn_path: Path, ses_path: Path, timeout_s: int, log: list[str],
 
 
 def importar_ses(pcb_path: Path, ses_path: Path, log: list[str]) -> None:
-    r = subprocess.run([KI_PY, str(BRIDGE), "import-ses", str(pcb_path), str(ses_path)],
+    r = subprocess.run([_ki_py(), str(BRIDGE), "import-ses", str(pcb_path), str(ses_path)],
                        capture_output=True, text=True)
     if r.returncode != 0:
         raise RuntimeError(f"import SES falhou: {(r.stderr or r.stdout)[:300]}")
@@ -88,7 +125,7 @@ def rodar_drc(pcb_path: Path, log: list[str]) -> dict:
     destino = pcb_path.parent.parent / "verify"
     destino.mkdir(parents=True, exist_ok=True)
     report = destino / "drc_report.json"
-    r = subprocess.run([KICAD_CLI, "pcb", "drc", str(pcb_path), "--format", "json",
+    r = subprocess.run([_kicad_cli(), "pcb", "drc", str(pcb_path), "--format", "json",
                         "-o", str(report)], capture_output=True, text=True)
     if r.returncode != 0:
         raise RuntimeError(f"DRC falhou: {(r.stderr or '')[:300]}")
@@ -109,7 +146,7 @@ def rodar_erc(sch_path: Path, log: list[str]) -> dict:
     destino = sch_path.parent.parent / "verify"
     destino.mkdir(parents=True, exist_ok=True)
     report = destino / "erc_report.json"
-    r = subprocess.run([KICAD_CLI, "sch", "erc", str(sch_path), "--format", "json",
+    r = subprocess.run([_kicad_cli(), "sch", "erc", str(sch_path), "--format", "json",
                         "-o", str(report)], capture_output=True, text=True)
     if r.returncode != 0:
         raise RuntimeError(f"ERC falhou: {(r.stderr or '')[:300]}")
