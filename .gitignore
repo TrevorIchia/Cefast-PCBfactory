@@ -1,0 +1,25 @@
+# === Pesados/regeneráveis: install.sh re-instala tudo (Plano §2, §17 F5) ===
+.venv/
+tools/
+_refs/
+libcache/
+*.dmg
+pcbforge/config/catalogo.json
+
+# === Projetos e artefatos do usuário (não fazem parte da ferramenta) ===
+boards/
+rascunhos/
+logs/
+bisect*-erc.rpt
+
+# === Sistema e caches ===
+.DS_Store
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# Residuos de debug/draft na raiz (mortos na F14c; draft ABNT2 é trabalho vivo)
+/bisect*
+/ex-*-erc.rpt
+/rascunho_abnt2.json

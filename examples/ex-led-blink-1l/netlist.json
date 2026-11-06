@@ -1,0 +1,26 @@
+{
+  "_comentario": "Netlist neutra do golden I01 — ex-led-blink-1l. Face simples: LED + resistor + conector de 2 pinos (o mínimo validável). Esquema documentado em docs/NETLIST-SPEC.md.",
+  "version": "1.0",
+  "metadata": {
+    "name": "ex-led-blink-1l",
+    "created_by": "pcbforge",
+    "description": "placa mínima: conector J1 VBUS/GND → R1 330Ω → D1 RED",
+    "created_at": "2026-10-28"
+  },
+  "board_profile_ref": "exemplo-inline",
+  "components": [
+    {"ref": "J1", "type": "conector", "value": "2p VBUS/GND", "symbol_ref": "Connector_Generic:Conn_01x02", "footprint_ref": "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical", "source": "kicad-library", "part_hint": "", "pins": [{"number": "1", "name": "VBUS"}, {"number": "2", "name": "GND"}]},
+    {"ref": "R1", "type": "resistor", "value": "330", "symbol_ref": "Device:R", "footprint_ref": "Resistor_SMD:R_0603_1608Metric", "source": "kicad-library", "part_hint": "", "pins": [{"number": "1"}, {"number": "2"}]},
+    {"ref": "D1", "type": "led", "value": "RED", "symbol_ref": "Device:LED", "footprint_ref": "LED_SMD:LED_0603_1608Metric", "source": "kicad-library", "part_hint": "", "pins": [{"number": "2", "name": "A"}, {"number": "1", "name": "K"}]}
+  ],
+  "connections": [
+    {"a": {"ref": "J1", "pin": "1"}, "b": {"ref": "R1", "pin": "2"}, "net_name": "VBUS"},
+    {"a": {"ref": "R1", "pin": "1"}, "b": {"ref": "D1", "pin": "2"}, "net_name": "LED_A"},
+    {"a": {"ref": "J1", "pin": "2"}, "b": {"ref": "D1", "pin": "1"}, "net_name": "GND"}
+  ],
+  "rails": [
+    {"net": "VBUS", "voltage": 5.0, "current": 0.02},
+    {"net": "GND", "voltage": 0.0, "current": 0.02}
+  ],
+  "constraints": []
+}

@@ -1,0 +1,13 @@
+# PCBForge — dependências do venv (F5 — M11; Plano Mestre §2.2 passo 6/§17)
+# Instalação sob demanda: `uv pip install -r requirements.txt` (venv criado por install.sh)
+click==8.5.0
+easyeda2kicad==1.0.1
+fastapi==0.162.0
+httpx==0.28.1
+kicad-sch-api==0.5.6
+kiutils==1.4.8
+matplotlib==3.11.2
+pydantic==2.14.1
+pytest==9.2.0
+PyYAML==6.0.3
+uvicorn==0.54.0

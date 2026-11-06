@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PCBForge — do seu pedido à placa fabricável</title>
+<style>
+  /* ——— design tokens (pesquisa UX 2026: dark UI c/ acentos dessaturados,
+         escala de espaçamento 8px, negativo generoso, 1 tarefa = 1 wizard) ——— */
+  :root {
+    --bg:#15181d; --surface:#1c2027; --surface2:#232833; --borda:#2c333e;
+    --texto:#dde3ea; --muted:#98a3b3; --faint:#6b7787;
+    --accent:#7fb3e0; --accent-dim:#33526b;
+    --ok:#8fca93; --ok-bg:#1d2a20; --ruim:#e08a8a; --ruim-bg:#33201f;
+    --warn:#e3c476; --warn-bg:#332b1c;
+    --r:12px; --r-s:8px;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--texto);
+         font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  h1,h2,h3 { line-height:1.3; }
+  a { color:var(--accent); text-decoration:none; }
+  code, pre, .mono { font:12.5px ui-monospace,"SF Mono",Menlo,monospace; }
+
+  /* topo */
+  header.topo { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:16px;
+    padding:12px 28px; background:rgba(21,24,29,.85); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--borda); }
+  .logo { font-weight:700; font-size:16px; letter-spacing:.2px; }
+  .logo b { color:var(--accent); }
+  .spin { min-width:1px; }
+
+  /* stepper */
+  .stepper { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--muted); }
+  .step { display:flex; gap:7px; align-items:center; padding:4px 12px; border-radius:99px; }
+  .step.ativo { background:var(--surface2); color:var(--texto); }
+  .step .n { width:20px; height:20px; border-radius:50%; display:grid; place-items:center;
+             font-size:11px; background:var(--surface2); color:var(--muted); }
+  .step.ativo .n { background:var(--accent-dim); color:var(--texto); }
+  .sep { color:var(--faint); }
+
+  main { max-width:860px; margin:0 auto; padding:32px 24px 80px; }
+
+  .cartao { background:var(--surface); border:1px solid var(--borda); border-radius:var(--r);
+            padding:24px; margin-bottom:16px; }
+  .rotulo { font-size:13px; font-weight:600; margin:0 0 8px; }
+  .ajuda { font-size:13px; color:var(--muted); margin:0 0 12px; }
+
+  textarea, input[type=text] { width:100%; background:var(--bg); color:var(--texto);
+    border:1px solid var(--borda); border-radius:var(--r-s); padding:12px 14px;
+    font:14px/1.5 inherit; resize:vertical; }
+  textarea:focus, input:focus { outline:none; border-color:var(--accent-dim); }
+  textarea.mono, #previa { font:12.5px ui-monospace,Menlo,monospace; }
+
+  button { border:0; border-radius:var(--r-s); padding:10px 20px; font-weight:600;
+           font-size:14px; cursor:pointer; background:var(--accent); color:#10161d; }
+  button:hover:not(:disabled) { filter:brightness(1.08); }
+  button.sec { background:var(--surface2); color:var(--texto); }
+  button.processa { background:var(--accent-dim); color:var(--texto); }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  .linha-b { display:flex; gap:10px; align-items:center; margin-top:18px; flex-wrap:wrap; }
+
+  .estado { margin-top:12px; padding:10px 14px; border-radius:var(--r-s);
+            font-size:13.5px; display:none; }
+  .estado.info  { display:block; background:var(--surface2); color:var(--muted); }
+  .estado.ok    { display:block; background:var(--ok-bg);   color:var(--ok); }
+  .estado.ruim  { display:block; background:var(--ruim-bg); color:var(--ruim); }
+  .estado.warn  { display:block; background:var(--warn-bg); color:var(--warn); }
+
+  /* tabela da prévia */
+  table.pre { width:100%; border-collapse:collapse; font-size:13px; margin:8px 0 4px; }
+  table.pre th { text-align:left; color:var(--faint); font-weight:600; font-size:11px;
+                 letter-spacing:.6px; text-transform:uppercase; padding:6px 10px; }
+  table.pre td { border-top:1px solid var(--borda); padding:8px 10px; }
+  .chip { display:inline-block; font-size:11px; padding:2px 9px; border-radius:99px; }
+  .chip.ok   { background:var(--ok-bg);  color:var(--ok); }
+  .chip.warn { background:var(--warn-bg);color:var(--warn); }
+
+  .item-check { font-size:13.5px; padding:5px 0; color:var(--muted); }
+  .item-check.ok  { color:var(--ok); }
+  .item-check.ruim{ color:var(--ruim); }
+
+  details.tech summary { cursor:pointer; color:var(--muted); font-size:13px;
+    padding:10px 0; user-select:none; }
+  details.tech summary:hover { color:var(--texto); }
+  details.tech .dentro { padding:12px 0 4px; }
+  details.tech h4 { margin:14px 0 6px; font-size:13px; color:var(--muted); }
+
+  .renders img { max-width:260px; border-radius:var(--r-s); border:1px solid var(--borda);
+                 margin:8px 12px 0 0; background:#0d0f13; }
+
+  .barra { height:7px; border-radius:99px; background:var(--surface2); overflow:hidden; margin:14px 0 8px; }
+  .barra > div { height:100%; width:35%; border-radius:99px; background:var(--accent-dim);
+                 animation:pulsa 1.4s ease-in-out infinite; }
+  @keyframes pulsa { 50% { transform:translateX(160%);} }
+
+  .toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%);
+    background:var(--surface2); border:1px solid var(--borda); color:var(--texto);
+    padding:12px 20px; border-radius:10px; font-size:14px; display:none;
+    box-shadow:0 8px 30px rgba(0,0,0,.45); z-index:9; max-width:90vw; }
+  .toast.ok { border-color:#2e4a33; } .toast.ruim { border-color:#5a2d2d; }
+
+  /* lista de projetos (página 0, colapsada) */
+  .placa { display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:13px 16px; border:1px solid var(--borda); border-radius:var(--r-s);
+    margin-bottom:8px; cursor:pointer; background:var(--surface); }
+  .placa:hover { border-color:var(--accent-dim); }
+  .placa .nome { font-weight:600; font-size:14px; }
+
+  .faixa { display:flex; gap:10px; align-items:center; color:var(--muted); font-size:13px; }
+  .k { color:var(--faint); font-size:11px; text-transform:uppercase; letter-spacing:.6px; }
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="logo"><b>PCB</b>Forge</div>
+  <div class="stepper" id="stepper">
+    <span class="step ativo" data-s="1"><span class="n">1</span> Pedido</span>
+    <span class="sep">›</span>
+    <span class="step" data-s="2"><span class="n">2</span> Prévia</span>
+    <span class="sep">›</span>
+    <span class="step" data-s="3"><span class="n">3</span> Fabricação</span>
+  </div>
+  <div style="flex:1"></div>
+  <div id="total-0" class="faixa"><span class="k">projetos</span><b id="nProjs">–</b></div>
+</header>
+
+<main>
+  <!-- ─────────── VISTA 1 · PEDIDO ─────────── -->
+  <section id="v1">
+    <div class="cartao">
+      <h2 style="margin:0 0 4px">Sua placa em uma frase</h2>
+      <p class="ajuda">Descreva o circuito como você contaria para um colega —
+        componente por componente. A IA identifica peças e conexões e prepara a revisão
+        de fabricação.</p>
+      <label class="rotulo" for="pedido">Descrição do circuito</label>
+      <textarea id="pedido" rows="5" class="mono"
+        placeholder="ex.: amplificador de áudio com LM386, alto-falante de 8 Ω, potenciômetro de volume de 10 kΩ, alimentação por bateria de 9 V, montagem THT"></textarea>
+
+      <div style="margin-top:16px">
+        <label class="rotulo" for="nomeProj">Nome do projeto</label>
+        <input type="text" id="nomeProj" oninput="validaNome()"
+               placeholder="ex.: lm386-amp-1l" style="max-width:420px">
+        <div id="estadoNome" style="font-size:13px;color:var(--faint);margin-top:6px">
+          letras, números e hífen — direto, sem acento</div>
+      </div>
+
+      <div class="linha-b">
+        <button id="bAnalisa" onclick="analisar()">Analisar pedido →</button>
+        <span id="bAnalisaDica" style="font-size:13px;color:var(--muted)">leva até ~1 min (análise por IA)</span>
+      </div>
+      <div id="est1" class="estado" aria-live="polite"></div>
+    </div>
+
+    <div class="cartao">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 style="margin:0">Seus projetos</h3>
+        <button class="sec" style="padding:6px 14px" onclick="mostrarProjetos(true)">atualizar</button>
+      </div>
+      <div id="lista" style="margin-top:14px">carregando…</div>
+    </div>
+  </section>
+
+  <!-- ─────────── VISTA 2 · PRÉVIA ─────────── -->
+  <section id="v2" style="display:none">
+    <div class="cartao">
+      <h2 style="margin:0 0 4px">Confira o que a IA entendeu</h2>
+      <p class="ajuda">Estas peças e conexões viram a sua placa. Tudo é editável depois,
+        agora na revisão <b>antes de fabricar</b>.</p>
+      <div id="blocoComps"></div>
+      <h4 style="margin:16px 0 2px" class="k">conexões</h4>
+      <table class="pre"><tbody id="tConns"></tbody></table>
+      <div id="duvidas" class="estado warn" style="display:none"></div>
+      <div id="est2" class="estado" aria-live="polite"></div>
+      <div class="linha-b">
+        <button id="bCriar" onclick="aprovarCriar()" disabled>Criar projeto ✔</button>
+        <button class="sec" onclick="voltar1()">← editar pedido</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── VISTA 3 · PROJETO / FABRICAÇÃO ─────────── -->
+  <section id="v3" style="display:none">
+    <div class="cartao" id="cStatus"></div>
+    <div class="cartao" id="cCheck"></div>
+    <div class="cartao renders" id="cRenders"></div>
+    <div class="cartao">
+      <details class="tech">
+        <summary>Detalhes técnicos (netlist, perfil, seeds e log de build)</summary>
+        <div class="dentro">
+          <h4 class="k">log build</h4>
+          <pre id="log" style="background:var(--bg);border:1px solid var(--borda);border-radius:var(--r-s);padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap"></pre>
+          <h4 class="k">seeds de placement (avançado)</h4>
+          <table class="pre" id="tabSeed"><thead><tr>
+            <th>seed</th><th>MST mm</th><th>sobr.</th><th>cruz.</th><th>1L</th>
+          </tr></thead><tbody></tbody></table>
+          <div id="advEdicao"></div>
+          <div class="linha-b"></div>
+        </div>
+      </details>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ──────────────────────────── estado ────────────────────────────
+const $ = id => document.getElementById(id);
+let pedidoAtual = null, sugestao = null, sel = null, timer = null, criando = false;
+
+function toast(msg, tipo='ok', ms=4200) {
+  const t = $('toast');
+  t.textContent = msg; t.className = 'toast ' + tipo; t.style.display = 'block';
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.style.display = 'none', ms);
+}
+function est(n, txt, cls) {
+  const e = $('est'+n); e.className = 'estado ' + cls; e.textContent = txt;
+}
+
+async function j(url, opts) {
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
+  return r.json();
+}
+
+function passo(n) {
+  for (const v of [1,2,3]) $('v'+v).style.display = v === n ? '' : 'none';
+  document.querySelectorAll('.step').forEach(s =>
+    s.classList.toggle('ativo', s.dataset.s == n));
+}
+
+// ──────────────────── VISTA 1 · pedido ────────────────────
+function validaNome() {
+  const nome = $('nomeProj').value.trim(), e = $('estadoNome');
+  const bom = !!(nome && /^[A-Za-z0-9-]+$/.test(nome));
+  e.textContent = !nome
+    ? 'letras, números e hífen — direto, sem acento'
+    : bom ? `✅ "${nome}" está conforme` : `❌ "${nome}": use só letras, números e hífen (§13.8)`;
+  e.style.color = !nome ? 'var(--faint)' : bom ? 'var(--ok)' : 'var(--ruim)';
+  return bom;
+}
+
+async function analisar() {
+  const pedido = $('pedido').value.trim();
+  if (!pedido) { est(1, 'Descreva seu circuito primeiro.', 'ruim'); return; }
+  const b = $('bAnalisa'); b.disabled = true; b.textContent = '⏳ analisando…';
+  $('bAnalisaDica').hidden = true;
+  est(1, 'A IA está lendo seu pedido e buscando as peças nas bibliotecas oficiais… '
+        + 'pode levar até 1 minuto.', 'info');
+  try {
+    const r = await j('/api/brain', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({pedido})});
+    if (!r.sugestao) { est(1, '❌ A IA não respondeu. Um clique em "Analisar" resolve tentar de novo. Detalhe: ' + (r.estados || []).join('; '), 'ruim'); }
+    else { sugestao = r.sugestao; pedidoAtual = pedido; mostrarPrevia(); passo(2); }
+  } catch (e) { est(1, '❌ ' + e.message, 'ruim');
+  } finally { b.disabled = false; b.textContent = 'Analisar pedido →'; $('bAnalisaDica').hidden = false; }
+}
+
+// ──────────────────── VISTA 2 · prévia ────────────────────
+function mostrarPrevia() {
+  const s = sugestao;
+  let linhas = '';
+  for (const c of s.components) {
+    const alerta = c.needs_review || !c.footprint_ref;
+    linhas += `<tr><td><code>${c.ref}</code></td><td>${c.type}</td><td>${c.value}</td>
+      <td>${alerta ? '<span class="chip warn">revisar</span>'
+                  : '<span class="chip ok">ok</span>'}</td></tr>`;
+  }
+  $('blocoComps').innerHTML = `<h4 class="k" style="margin:12px 0 2px">peças</h4>
+    <table class="pre"><thead><tr><th>ref</th><th>peça</th><th>valor</th><th>estado</th></tr></thead><tbody>${linhas}</tbody></table>`;
+  $('tConns').innerHTML = s.connections.map(cn =>
+    `<tr><td><code>${cn.a.ref}.${cn.a.pin} ↔ ${cn.b.ref}.${cn.b.pin}</code></td>
+     <td style="color:var(--muted)">${cn.net_name}</td>
+     <td>${cn.needs_review ? '<span class="chip warn">revisar</span>' : ''}</td></tr>`).join('')
+    || '<tr><td colspan="3" style="color:var(--faint)">nenhuma conexão</td></tr>';
+  const d = s.omitido || [];
+  $('duvidas').style.display = d.length ? 'block' : 'none';
+  $('duvidas').textContent = d.length
+    ? 'Perguntas que ficaram em aberto (ficam gravadas no netlist como "omitido", você responde na revisão §13.1):\n· '
+      + d.join('\n· ') : '';
+  const erros = (s.bloqueios || []).length;
+  est(2, erros ? '❌ Peças com problema — não dá para criar o projeto: '
+        + s.bloqueios.map(p => p.codigo + ': ' + (p.mensagem || p.msg)).join('; ')
+      : d.length ? 'Peças marcadas "revisar" são opcionais de conferir — o projeto pode ser criado e ajustado depois.'
+      : 'Tudo validado. Pode criar o projeto.', erros ? 'ruim' : 'ok');
+  const b = $('bCriar'); b.disabled = erros > 0;
+  b.textContent = erros ? 'Peças com erro — corrija o pedido' : 'Criar projeto ✔';
+}
+
+function voltar1() { passo(1); est(1, 'Revise e analise de novo quando quiser.', 'info'); }
+
+// ──────────────── commit (aprovar e criar) ────────────────
+async function aprovarCriar() {
+  if (criando) return;
+  const nome = $('nomeProj').value.trim();
+  if (!validaNome()) { passo(1); est(1, 'O nome precisa ser válido antes de aprovar.', 'ruim'); return; }
+  if (!pedidoAtual) { passo(1); return; }
+  criando = true;
+  const b = $('bCriar'); b.disabled = true; b.textContent = '⏳ criando…';
+  try {
+    await j('/api/brain/criar', {method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pedido: pedidoAtual, nome})});
+    toast(`Projeto "${nome}" criado ✔`, 'ok'); pedidoAtual = null; abrir(nome);
+  } catch (e) {
+    if (String(e.message).includes('já existe')) {
+      toast(`"${nome}" já existia — abrindo sem duplicar`, 'ok'); abrir(nome);
+    } else { est(2, '❌ ' + e.message, 'ruim'); }
+  }
+  criando = false; const b2 = $('bCriar');
+  if (b2) { b2.disabled = false; b2.textContent = 'Criar projeto ✔'; }
+}
+
+// ──────────────────── VISTA 3 · projeto ────────────────────
+async function listaProjetos() {
+  const ps = await j('/api/projetos');
+  $('nProjs').textContent = ps.length;
+  $('lista').innerHTML = ps.map(p =>
+    `<div class="placa" onclick="abrir('${p.nome}')">
+      <div><div class="nome">${p.nome}</div></div>
+      <div style="text-align:right">
+        <div class="chip ${p.pronto ? 'ok' : 'warn'}">${p.pronto ? 'placa pronta' : 'sem build'}</div>
+      </div></div>`).join('')
+    || '<div style="color:var(--faint);font-size:13px">nenhum projeto ainda — descreva seu circuito acima ↑</div>';
+}
+const mostrarProjetos = () => listaProjetos();
+
+function abrir(nome) {
+  sel = nome; passo(3);
+  listaProjetos();
+  clearInterval(timer);
+  const b = $('advEdicao');
+  b.innerHTML = `
+    <div class="linha-b"><button id="bBuild" onclick="rodarBuild()">▶ Fabricar placa (build)</button>
+      <span style="font-size:13px;color:var(--muted)">gera esquemático, rotas, Gerbers e STEP</span></div>
+    <h4 class="k">netlist — revisão §13.1</h4>
+    <textarea id="netlist" rows="10" class="mono"></textarea>
+    <div id="probNetlist" class="estado"></div>
+    <div class="linha-b"><button class="sec" onclick="salvarNetlist()">Validar e salvar netlist</button></div>
+    <h4 class="k">perfil da placa — revisão §13.2</h4>
+    <textarea id="perfil" rows="9" class="mono"></textarea>
+    <div id="probPerfil" class="estado"></div>
+    <div class="linha-b"><button class="sec" onclick="salvarPerfil()">Validar e salvar perfil</button></div>`;
+  carregar();
+  timer = setInterval(vivaLog, 1500);
+}
+
+async function carregar() {
+  if (!sel) return;
+  try {
+    const nl = await j(`/api/projetos/${sel}/netlist`);
+    $('netlist').value = JSON.stringify(nl, null, 2);
+    const pf = await j(`/api/projetos/${sel}/perfil`);
+    $('perfil').value = pf.yaml;
+  } catch (e) { /* detalhes técnicos falham, vista permanece viva */ }
+  vivaLog();
+  carregarSeeds();
+}
+
+async function salvarNetlist() {
+  try {
+    const dados = JSON.parse($('netlist').value);
+    const r = await j(`/api/projetos/${sel}/netlist`, {method:'PUT',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify(dados)});
+    $('probNetlist').className = 'estado ' + (r.salvo ? 'ok' : 'ruim');
+    $('probNetlist').textContent = r.salvo ? '✅ salvo e validado'
+      : (r.problemas || []).map(p => `${p.codigo}: ${p.msg}`).join('\n');
+  } catch (e) { $('probNetlist').className='estado ruim'; $('probNetlist').textContent = 'JSON inválido: ' + e.message; }
+}
+
+async function salvarPerfil() {
+  try {
+    const r = await j(`/api/projetos/${sel}/perfil`, {method:'PUT',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify({yaml:$('perfil').value})});
+    $('probPerfil').className = 'estado ' + (r.salvo ? 'ok' : 'ruim');
+    $('probPerfil').textContent = r.salvo ? '✅ salvo e validado'
+      : (r.problemas || []).map(p => `${p.codigo}: ${p.msg}`).join('\n');
+  } catch (e) { $('probPerfil').className='estado ruim'; $('probPerfil').textContent = e.message; }
+}
+
+async function rodarBuild() {
+  const b = $('bBuild'); b.disabled = true; b.textContent = '⏳ build em andamento…';
+  try { await j(`/api/projetos/${sel}/build`, {method:'POST',
+      headers:{'Content-Type':'application/json'}, body:'{}'});
+    toast('Build disparado — acompanhe a barra', 'ok');
+  } catch (e) { toast('Build negado pelo preflight: ' + e.message, 'ruim', 9000);
+    clearInterval(timer); b.disabled = false; b.textContent = '▶ Fabricar placa (build)'; }
+  vivaLog();
+}
+
+async function vivaLog() {
+  if (!sel) return;
+  try {
+    const s = await j(`/api/projetos/${sel}/build/status`);
+    const st = s.build || {};
+    if ($('log')) $('log').textContent = (s.log || []).join('\n') || 'sem log ainda';
+    const rodando = st.state_live;
+    const c = s.checklist || {};
+    const itens = (c.itens || []);
+    const nok = itens.filter(i => i.ok).length;
+    $('cStatus').innerHTML = `<h2 style="margin:0 0 4px">${sel}</h2>
+      <div class="faixa" style="margin-top:2px">
+        <span class="chip ${st.estado==='ok' ? 'ok' : st.estado==='falha' ? 'warn' : 'info'}"
+          style="background:${st.estado==='ok' ? 'var(--ok-bg)' : st.estado==='falha' ? 'var(--ruim-bg)' : 'var(--surface2)'}">
+          ${st.estado === 'ok' ? '✅ placa fabricável'
+            : st.estado === 'falha' ? '⚠ build terminou com problema'
+            : rodando ? '⏳ construindo…' : 'sem build ainda'}</span>
+        <span class="k">checklist ${nok}/${itens.length}</span></div>
+      ${(rodando) ? '<div class="barra"><div></div></div>' : ''}`;
+    $('cCheck').innerHTML = `<h3 style="margin:0 0 8px">Checklist pré-fabricação</h3>` +
+      (itens.map(i => `<div class="item-check ${i.ok ? 'ok' : 'ruim'}">
+        ${i.ok ? '✅' : '○'} ${i.id} — ${i.detalhe}</div>`).join('') || '') +
+      `<div class="linha-b"><a id="linkZip" href="/api/projetos/${sel}/zip">⬇ baixar Gerbers (.zip)</a></div>`;
+    // renders (silencioso em falha)
+    try {
+      const r = await j(`/api/projetos/${sel}/renders`);
+      $('cRenders').innerHTML = r.renders.slice(0, 3).map(n =>
+        `<img src="/api/projetos/${sel}/renders/${n}" alt="render">`).join('');
+    } catch (e) { $('cRenders').innerHTML = ''; }
+    // botão volta quando termina
+    const bb = $('bBuild');
+    if (bb && !rodando && bb.disabled && st.estado) {
+      bb.disabled = false; bb.textContent = '▶ Fabricar de novo (build)';
+    }
+  } catch (e) { /* polling tolera falha de rede */ }
+}
+
+async function carregarSeeds() {
+  try {
+    const r = await j(`/api/projetos/${sel}/seeds`);
+    $('tabSeed').querySelector('tbody').innerHTML = r.seeds.map(s =>
+      `<tr><td>${s.seed}</td><td>${s.mst_mm}</td><td>${s.sobreposicoes}</td>
+       <td>${s.cruzamentos}</td><td>${s.viavel_1l ? '✅' : '—'}</td></tr>`).join('');
+  } catch (e) { console.warn(e); }
+}
+
+// ─────────────────── boot ───────────────────
+listaProjetos().catch(() => toast('sem conexão com o servidor', 'ruim'));
+passo(1);
+</script>
+</body>
+</html>

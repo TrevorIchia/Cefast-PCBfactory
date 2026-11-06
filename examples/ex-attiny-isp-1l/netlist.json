@@ -1,0 +1,584 @@
+{
+ "_comentario": "Circuito real testado: placa de dev ATtiny2313 (20 pinos, SOIC-20W) com ISP 2x3 face simples. Fonte: EDN 'ATtiny2313 minimum DIY development board'. Pinout confirmado no symbol oficial KiCad MCU_Microchip_ATtiny:ATtiny2313-20S (1=RESET, 5=XTAL1, 10=GND, 12..19=PB0..PB7, 17=PB5MOSI, 18=PB6MISO, 19=PB7SCK, 20=VCC).",
+ "version": "1.0",
+ "metadata": {
+  "name": "ex-attiny-isp-1l",
+  "created_by": "pcbforge",
+  "description": "ATtiny2313 20-pin SOIC-20W, ISP 2x3, RESET 10k, decoupling 100n, 3 LEDs em PB0-PB2 — face simples",
+  "created_at": "2026-10-28"
+ },
+ "board_profile_ref": "design/board_profile.yaml",
+ "components": [
+  {
+   "ref": "U1",
+   "type": "ci",
+   "value": "ATtiny2313-20S",
+   "symbol_ref": "MCU_Microchip_ATtiny:ATtiny2313-20S",
+   "footprint_ref": "Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    40,
+    25
+   ],
+   "pins": [
+    {
+     "number": "1",
+     "name": "PA2/~{RESET}"
+    },
+    {
+     "number": "2",
+     "name": "PD0"
+    },
+    {
+     "number": "3",
+     "name": "PD1"
+    },
+    {
+     "number": "4",
+     "name": "PA1/XTAL2"
+    },
+    {
+     "number": "5",
+     "name": "PA0/XTAL1"
+    },
+    {
+     "number": "6",
+     "name": "PD2"
+    },
+    {
+     "number": "7",
+     "name": "PD3"
+    },
+    {
+     "number": "8",
+     "name": "PD4"
+    },
+    {
+     "number": "9",
+     "name": "PD5"
+    },
+    {
+     "number": "10",
+     "name": "GND"
+    },
+    {
+     "number": "11",
+     "name": "PD6"
+    },
+    {
+     "number": "12",
+     "name": "PB0"
+    },
+    {
+     "number": "13",
+     "name": "PB1"
+    },
+    {
+     "number": "14",
+     "name": "PB2"
+    },
+    {
+     "number": "15",
+     "name": "PB3"
+    },
+    {
+     "number": "16",
+     "name": "PB4"
+    },
+    {
+     "number": "17",
+     "name": "PB5"
+    },
+    {
+     "number": "18",
+     "name": "PB6"
+    },
+    {
+     "number": "19",
+     "name": "PB7"
+    },
+    {
+     "number": "20",
+     "name": "VCC"
+    }
+   ]
+  },
+  {
+   "ref": "J1",
+   "type": "conector",
+   "value": "PWR VCC/GND",
+   "symbol_ref": "Connector_Generic:Conn_01x02",
+   "footprint_ref": "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    8,
+    40
+   ],
+   "pins": [
+    {
+     "number": "1",
+     "name": "VBUS"
+    },
+    {
+     "number": "2",
+     "name": "GND"
+    }
+   ]
+  },
+  {
+   "ref": "J2",
+   "type": "conector",
+   "value": "ISP 2x3",
+   "symbol_ref": "Connector_Generic:Conn_02x03_Odd_Even",
+   "footprint_ref": "Connector_PinHeader_2.54mm:PinHeader_2x03_P2.54mm_Vertical",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    62,
+    6
+   ],
+   "pins": [
+    {
+     "number": "1"
+    },
+    {
+     "number": "2"
+    },
+    {
+     "number": "3"
+    },
+    {
+     "number": "4"
+    },
+    {
+     "number": "5"
+    },
+    {
+     "number": "6"
+    }
+   ]
+  },
+  {
+   "ref": "R1",
+   "type": "resistor",
+   "value": "10k",
+   "symbol_ref": "Device:R",
+   "footprint_ref": "Resistor_SMD:R_0603_1608Metric",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    28,
+    12
+   ],
+   "pins": [
+    {
+     "number": "1"
+    },
+    {
+     "number": "2"
+    }
+   ]
+  },
+  {
+   "ref": "C1",
+   "type": "capacitor",
+   "value": "100n",
+   "symbol_ref": "Device:C",
+   "footprint_ref": "Capacitor_SMD:C_0603_1608Metric",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    46,
+    12
+   ],
+   "pins": [
+    {
+     "number": "1"
+    },
+    {
+     "number": "2"
+    }
+   ]
+  },
+  {
+   "ref": "R2",
+   "type": "resistor",
+   "value": "330",
+   "symbol_ref": "Device:R",
+   "footprint_ref": "Resistor_SMD:R_0603_1608Metric",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    56,
+    38
+   ],
+   "pins": [
+    {
+     "number": "1"
+    },
+    {
+     "number": "2"
+    }
+   ]
+  },
+  {
+   "ref": "D1",
+   "type": "led",
+   "value": "RED",
+   "symbol_ref": "Device:LED",
+   "footprint_ref": "LED_SMD:LED_0603_1608Metric",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    66,
+    38
+   ],
+   "pins": [
+    {
+     "number": "1",
+     "name": "K"
+    },
+    {
+     "number": "2",
+     "name": "A"
+    }
+   ]
+  },
+  {
+   "ref": "R3",
+   "type": "resistor",
+   "value": "330",
+   "symbol_ref": "Device:R",
+   "footprint_ref": "Resistor_SMD:R_0603_1608Metric",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    56,
+    33
+   ],
+   "pins": [
+    {
+     "number": "1"
+    },
+    {
+     "number": "2"
+    }
+   ]
+  },
+  {
+   "ref": "D2",
+   "type": "led",
+   "value": "RED",
+   "symbol_ref": "Device:LED",
+   "footprint_ref": "LED_SMD:LED_0603_1608Metric",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    66,
+    33
+   ],
+   "pins": [
+    {
+     "number": "1",
+     "name": "K"
+    },
+    {
+     "number": "2",
+     "name": "A"
+    }
+   ]
+  },
+  {
+   "ref": "R4",
+   "type": "resistor",
+   "value": "330",
+   "symbol_ref": "Device:R",
+   "footprint_ref": "Resistor_SMD:R_0603_1608Metric",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    56,
+    28
+   ],
+   "pins": [
+    {
+     "number": "1"
+    },
+    {
+     "number": "2"
+    }
+   ]
+  },
+  {
+   "ref": "D3",
+   "type": "led",
+   "value": "RED",
+   "symbol_ref": "Device:LED",
+   "footprint_ref": "LED_SMD:LED_0603_1608Metric",
+   "source": "kicad-library",
+   "part_hint": "",
+   "pos_mm": [
+    66,
+    28
+   ],
+   "pins": [
+    {
+     "number": "1",
+     "name": "K"
+    },
+    {
+     "number": "2",
+     "name": "A"
+    }
+   ]
+  }
+ ],
+ "connections": [
+  {
+   "a": {
+    "ref": "J1",
+    "pin": "1"
+   },
+   "b": {
+    "ref": "J2",
+    "pin": "2"
+   },
+   "net_name": "VCC"
+  },
+  {
+   "a": {
+    "ref": "J1",
+    "pin": "1"
+   },
+   "b": {
+    "ref": "U1",
+    "pin": "20"
+   },
+   "net_name": "VCC"
+  },
+  {
+   "a": {
+    "ref": "J1",
+    "pin": "1"
+   },
+   "b": {
+    "ref": "R1",
+    "pin": "1"
+   },
+   "net_name": "VCC"
+  },
+  {
+   "a": {
+    "ref": "J1",
+    "pin": "1"
+   },
+   "b": {
+    "ref": "C1",
+    "pin": "1"
+   },
+   "net_name": "VCC"
+  },
+  {
+   "a": {
+    "ref": "J1",
+    "pin": "2"
+   },
+   "b": {
+    "ref": "J2",
+    "pin": "6"
+   },
+   "net_name": "GND"
+  },
+  {
+   "a": {
+    "ref": "J1",
+    "pin": "2"
+   },
+   "b": {
+    "ref": "U1",
+    "pin": "10"
+   },
+   "net_name": "GND"
+  },
+  {
+   "a": {
+    "ref": "J1",
+    "pin": "2"
+   },
+   "b": {
+    "ref": "C1",
+    "pin": "2"
+   },
+   "net_name": "GND"
+  },
+  {
+   "a": {
+    "ref": "J1",
+    "pin": "2"
+   },
+   "b": {
+    "ref": "D1",
+    "pin": "1"
+   },
+   "net_name": "GND"
+  },
+  {
+   "a": {
+    "ref": "J1",
+    "pin": "2"
+   },
+   "b": {
+    "ref": "D2",
+    "pin": "1"
+   },
+   "net_name": "GND"
+  },
+  {
+   "a": {
+    "ref": "J1",
+    "pin": "2"
+   },
+   "b": {
+    "ref": "D3",
+    "pin": "1"
+   },
+   "net_name": "GND"
+  },
+  {
+   "a": {
+    "ref": "U1",
+    "pin": "1"
+   },
+   "b": {
+    "ref": "R1",
+    "pin": "2"
+   },
+   "net_name": "RESET"
+  },
+  {
+   "a": {
+    "ref": "U1",
+    "pin": "1"
+   },
+   "b": {
+    "ref": "J2",
+    "pin": "5"
+   },
+   "net_name": "RESET"
+  },
+  {
+   "a": {
+    "ref": "U1",
+    "pin": "18"
+   },
+   "b": {
+    "ref": "J2",
+    "pin": "1"
+   },
+   "net_name": "ISP_MISO"
+  },
+  {
+   "a": {
+    "ref": "U1",
+    "pin": "19"
+   },
+   "b": {
+    "ref": "J2",
+    "pin": "3"
+   },
+   "net_name": "ISP_SCK"
+  },
+  {
+   "a": {
+    "ref": "U1",
+    "pin": "17"
+   },
+   "b": {
+    "ref": "J2",
+    "pin": "4"
+   },
+   "net_name": "ISP_MOSI"
+  },
+  {
+   "a": {
+    "ref": "U1",
+    "pin": "12"
+   },
+   "b": {
+    "ref": "R2",
+    "pin": "1"
+   },
+   "net_name": "PB0"
+  },
+  {
+   "a": {
+    "ref": "R2",
+    "pin": "2"
+   },
+   "b": {
+    "ref": "D1",
+    "pin": "2"
+   },
+   "net_name": "LED1_A"
+  },
+  {
+   "a": {
+    "ref": "U1",
+    "pin": "13"
+   },
+   "b": {
+    "ref": "R3",
+    "pin": "1"
+   },
+   "net_name": "PB1"
+  },
+  {
+   "a": {
+    "ref": "R3",
+    "pin": "2"
+   },
+   "b": {
+    "ref": "D2",
+    "pin": "2"
+   },
+   "net_name": "LED2_A"
+  },
+  {
+   "a": {
+    "ref": "U1",
+    "pin": "14"
+   },
+   "b": {
+    "ref": "R4",
+    "pin": "1"
+   },
+   "net_name": "PB2"
+  },
+  {
+   "a": {
+    "ref": "R4",
+    "pin": "2"
+   },
+   "b": {
+    "ref": "D3",
+    "pin": "2"
+   },
+   "net_name": "LED3_A"
+  }
+ ],
+ "rails": [
+  {
+   "net": "VCC",
+   "voltage": 5.0,
+   "current": 0.06
+  },
+  {
+   "net": "GND",
+   "voltage": 0.0,
+   "current": 0.06
+  }
+ ],
+ "constraints": []
+}

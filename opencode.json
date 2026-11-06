@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "kicad_pro": {
+      "type": "local",
+      "command": ["uvx", "--with", "cryptography==48.0.1", "kicad-mcp-pro", "--transport", "stdio"],
+      "cwd": "/Users/user/pcbforge",
+      "enabled": true,
+      "environment": {
+        "KICAD_MCP_PROJECT_DIR": "/Users/user/pcbforge/boards/semaforo",
+        "KICAD_MCP_OPERATING_MODE": "readonly"
+      }
+    }
+  }
+}
